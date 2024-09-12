@@ -17,4 +17,7 @@ public class ErrorResponse {
         this.httpStatus = errorCode.getHttpStatus();
         this.message = message;
     }
+    public ErrorResponse(ErrorCode errorCode) {
+        this(errorCode, errorCode.getMessage());
+    }
 }
