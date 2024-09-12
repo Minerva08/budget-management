@@ -35,3 +35,8 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### resources ###
+/src/main/resources/application-local.yml
+/src/main/resources/logback-local.xml
+/src/main/resources/logback-prod.xml

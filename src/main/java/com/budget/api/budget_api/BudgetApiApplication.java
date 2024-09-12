@@ -1,13 +1,13 @@
-package com.skeleton.api.skeleton_api;
+package com.budget.api.budget_api;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SkeletonApiApplication {
+public class BudgetApiApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(SkeletonApiApplication.class, args);
+        SpringApplication.run(BudgetApiApplication.class, args);
     }
 
 }
