@@ -1,4 +1,4 @@
-package com.budget.api.budget_api.user.dto;
+package com.budget.api.budget_api.user.dto.login;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -8,10 +8,8 @@ import lombok.Getter;
 public class LoginReq {
     private String email;
     private String account;
-    private String username;
     private String pw;
     private String birth;
     private String grant;
-    private String createDate;
 
 }

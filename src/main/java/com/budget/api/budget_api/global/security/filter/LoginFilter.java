@@ -4,7 +4,7 @@ import com.budget.api.budget_api.global.common.error.ErrorCode;
 import com.budget.api.budget_api.global.common.error.ErrorResponse;
 import com.budget.api.budget_api.global.security.custom.CustomUserDetails;
 import com.budget.api.budget_api.global.security.token.TokenManager;
-import com.budget.api.budget_api.user.dto.LoginReq;
+import com.budget.api.budget_api.user.dto.login.LoginReq;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
