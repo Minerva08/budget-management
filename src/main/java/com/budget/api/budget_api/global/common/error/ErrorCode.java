@@ -1,5 +1,8 @@
 package com.budget.api.budget_api.global.common.error;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
@@ -8,8 +11,12 @@ public enum ErrorCode {
     //사용자
     USER_NOT_FOUND(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."),
     USER_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "이미 존재하는 사용자 입니다"),
-    ACCOUNT_ALREADY_REGISTERED(HttpStatus.CONFLICT, "이미 등록된 계정입니다."),
+    USER_REG_ERROR(INTERNAL_SERVER_ERROR, "서버 내부 오류로 사용자 등록에 실패했습니다."),
 
+    //Valid
+    DATE_VALIDATE_PARAM(BAD_REQUEST, "날짜 유효성 조건에 맞지 않습니다."),
+    VALIDATE_PARAM(BAD_REQUEST, "유효성 조건에 맞지 않습니다."),
+    REQUIRED_PARAM(INTERNAL_SERVER_ERROR, "Not Null"),
 
     // 인증&인가
     AUTHENTICATION_FAILED(HttpStatus.UNAUTHORIZED, "사용자 인증에 실패했습니다."),

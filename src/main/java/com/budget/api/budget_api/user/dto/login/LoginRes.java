@@ -1,4 +1,4 @@
-package com.budget.api.budget_api.user.dto;
+package com.budget.api.budget_api.user.dto.login;
 
 import com.budget.api.budget_api.global.enums.AuthStatus;
 import lombok.Builder;

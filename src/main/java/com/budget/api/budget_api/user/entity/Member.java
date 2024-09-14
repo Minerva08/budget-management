@@ -31,5 +31,6 @@ public class Member {
     @Enumerated(EnumType.STRING)
     private GrantType grant;
     private LocalDateTime createDate;
+    private LocalDateTime updateDate;
 
 }
