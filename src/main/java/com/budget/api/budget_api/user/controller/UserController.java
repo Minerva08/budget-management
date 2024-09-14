@@ -2,12 +2,14 @@ package com.budget.api.budget_api.user.controller;
 
 import com.budget.api.budget_api.user.dto.join.JoinReq;
 import com.budget.api.budget_api.user.dto.join.JoinRes;
+import com.budget.api.budget_api.user.dto.login.LoginReq;
 import com.budget.api.budget_api.user.service.UserService;
 import com.budget.api.budget_api.global.common.CommonResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class UserController {
 
-    private UserService userService;
+    private final UserService userService;
 
     /**
      * 사용자 회원가입
@@ -37,6 +39,21 @@ public class UserController {
             userService.signUp(joinReqDto));
 
         return new ResponseEntity<>(response, response.getHttpStatus());
+    }
+
+    /**
+     * 사용자 로그인
+     *
+     * @param loginReqDto 로그인 요청 DTO
+     * @return 사용자 Id
+     * @throws com.budget.api.budget_api.global.common.exception.CustomException 존재하지 않는 사용자 -> USER_NOT_FOUND
+     */
+    @Operation(summary = "사용자 로그인", description = "사용자는 계정과 비밀번호로 로그인 합니다.")
+    @PostMapping("/login")
+    public ResponseEntity<?> signUp(
+        @RequestBody @Valid LoginReq loginReqDto) {
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 }

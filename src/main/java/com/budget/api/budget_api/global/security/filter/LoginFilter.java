@@ -2,9 +2,12 @@ package com.budget.api.budget_api.global.security.filter;
 
 import com.budget.api.budget_api.global.common.error.ErrorCode;
 import com.budget.api.budget_api.global.common.error.ErrorResponse;
+import com.budget.api.budget_api.global.enums.AuthStatus;
+import com.budget.api.budget_api.global.enums.GrantType;
 import com.budget.api.budget_api.global.security.custom.CustomUserDetails;
 import com.budget.api.budget_api.global.security.token.TokenManager;
 import com.budget.api.budget_api.user.dto.login.LoginReq;
+import com.budget.api.budget_api.user.dto.login.LoginRes;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,7 +41,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
 
     public LoginFilter(ObjectMapper objectMapper, AuthenticationManager authenticationManager,
         TokenManager tokenManager) {
-        super(new AntPathRequestMatcher("/login", HttpMethod.POST.name())); // 위에서 설정한 "login" + POST로 온 요청을 처리하기 위해 설정
+        super(new AntPathRequestMatcher("/users/login", HttpMethod.POST.name())); // 위에서 설정한 "login" + POST로 온 요청을 처리하기 위해 설정
         this.objectMapper = objectMapper;
         this.authenticationManager = authenticationManager;
         this.tokenManager = tokenManager;
@@ -74,12 +77,14 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request,
-        HttpServletResponse response, FilterChain chain, Authentication authResult) {
+        HttpServletResponse response, FilterChain chain, Authentication authResult)
+        throws IOException {
 
         CustomUserDetails customUserDetails = (CustomUserDetails) authResult.getPrincipal();
         String username = customUserDetails.getUsername();
+        GrantType grant = customUserDetails.getGrant();
         String userAccount = customUserDetails.getUserAccount();
-        tokenManager.issueTokens(response, userAccount,username);
+        tokenManager.issueTokens(response, userAccount,username,grant);
     }
 
     @Override
