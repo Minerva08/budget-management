@@ -62,26 +62,33 @@ public class JwtTokenProvider {
         if(category.equals("access")){
             return Jwts.builder()
                 .claim("category", category)
+                .claim("username",username)
                 .claim("account", account)
                 .claim("grant",grant.toString())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(
                     System.currentTimeMillis() + accessExpiration))
                 .signWith(secretKey)
-                .compact();
+                .compact()
+                .trim();
 
         }else if(category.equals("refresh")){
             return Jwts.builder()
                 .claim("category", category)
                 .claim("account", account)
-                .claim("username", username)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(
                     System.currentTimeMillis() + refreshExpiration))
                 .signWith(secretKey)
-                .compact();
+                .compact()
+                .trim();
 
         }
         return null;
+    }
+
+    public String getGrant(String token) {
+        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload()
+            .get("grant", String.class);
     }
 }

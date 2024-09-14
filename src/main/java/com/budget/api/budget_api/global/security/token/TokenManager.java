@@ -34,34 +34,29 @@ public class TokenManager {
         throws IOException {
         // JWT 생성
         String accessToken = jwtTokenProvider.createJwt(atCategory,account,username,grant);
-        String refreshToken = jwtTokenProvider.createJwt(rtCategory, account,null,null);
+        String refreshToken = jwtTokenProvider.createJwt(rtCategory, account,username,null);
 
         // Redis에 Refresh Token 저장
         saveRefreshToken(account, refreshToken);
 
+        response.addHeader("Authorization", "Bearer " + accessToken);
+
         // 응답에 토큰 추가
         response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
 
         response.getWriter().write(
             objectMapper.writeValueAsString(LoginRes.builder()
                 .account(account)
-                    .accessToken(accessToken)
-                    .refreshToken(refreshToken)
-                    .grant(grant.toString())
-                    .authStatus(AuthStatus.PERMIT)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .grant(grant.toString())
+                .authStatus(AuthStatus.PERMIT)
                 .build()
             )
         );
 
-        response.setCharacterEncoding("UTF-8");
         response.setStatus(HttpStatus.OK.value());
-    }
-
-    private Cookie createCookie(String key, String value) {
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(24 * 60 * 60); // 하루 동안 유효
-        cookie.setHttpOnly(true);
-        return cookie;
     }
 
     public boolean isAccessToken(String accessToken) {
@@ -100,7 +95,7 @@ public class TokenManager {
 
     // Refresh Token 검증 메서드
     public void validateRefreshToken(String refreshToken) {
-        String username = jwtTokenProvider.getUsername(refreshToken);
+        String username = jwtTokenProvider.getAccount(refreshToken);
         // Redis에 저장된 Refresh Token과 비교
         String storedRefreshToken = refreshTokenService.getRefreshToken(username);
         if (!refreshToken.equals(storedRefreshToken)) {
@@ -108,4 +103,7 @@ public class TokenManager {
         }
     }
 
+    public String getGrant(String accessToken) {
+        return jwtTokenProvider.getGrant(accessToken);
+    }
 }
