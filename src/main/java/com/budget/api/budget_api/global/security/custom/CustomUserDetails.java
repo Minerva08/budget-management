@@ -1,5 +1,6 @@
 package com.budget.api.budget_api.global.security.custom;
 
+import com.budget.api.budget_api.global.enums.GrantType;
 import com.budget.api.budget_api.user.entity.Member;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,5 +50,9 @@ public class CustomUserDetails implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public GrantType getGrant(){
+        return member.getGrant();
     }
 }

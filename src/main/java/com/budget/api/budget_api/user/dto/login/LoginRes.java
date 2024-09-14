@@ -10,4 +10,6 @@ public class LoginRes {
     private String account;
     private String grant;
     private AuthStatus authStatus;
+    private String accessToken;
+    private String refreshToken;
 }

@@ -2,9 +2,14 @@ package com.budget.api.budget_api.global.security.token;
 
 import com.budget.api.budget_api.global.common.error.ErrorCode;
 import com.budget.api.budget_api.global.common.exception.CustomException;
+import com.budget.api.budget_api.global.enums.AuthStatus;
+import com.budget.api.budget_api.global.enums.GrantType;
 import com.budget.api.budget_api.global.security.service.RefreshTokenService;
+import com.budget.api.budget_api.user.dto.login.LoginRes;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -15,6 +20,8 @@ public class TokenManager {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenService refreshTokenService;
+    private final ObjectMapper objectMapper;
+
 
     private final String atCategory="access";
     private final String rtCategory="refresh";
@@ -23,18 +30,30 @@ public class TokenManager {
         jwtTokenProvider.validateToken(token);
     }
 
-    public void issueTokens(HttpServletResponse response, String account,String username) {
+    public void issueTokens(HttpServletResponse response, String account,String username, GrantType grant)
+        throws IOException {
         // JWT 생성
-        String accessToken = jwtTokenProvider.createJwt(atCategory,account,username);
-        String refreshToken = jwtTokenProvider.createJwt(rtCategory, account,null);
+        String accessToken = jwtTokenProvider.createJwt(atCategory,account,username,grant);
+        String refreshToken = jwtTokenProvider.createJwt(rtCategory, account,null,null);
 
         // Redis에 Refresh Token 저장
         saveRefreshToken(account, refreshToken);
 
         // 응답에 토큰 추가
-        response.addHeader("Authorization", "Bearer " + accessToken);
-        response.addCookie(createCookie("refresh", refreshToken));
+        response.setContentType("application/json");
 
+        response.getWriter().write(
+            objectMapper.writeValueAsString(LoginRes.builder()
+                .account(account)
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .grant(grant.toString())
+                    .authStatus(AuthStatus.PERMIT)
+                .build()
+            )
+        );
+
+        response.setCharacterEncoding("UTF-8");
         response.setStatus(HttpStatus.OK.value());
     }
 

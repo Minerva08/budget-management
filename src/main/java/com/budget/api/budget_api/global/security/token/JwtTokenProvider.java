@@ -1,6 +1,7 @@
 package com.budget.api.budget_api.global.security.token;
 
 import com.budget.api.budget_api.global.common.error.ErrorCode;
+import com.budget.api.budget_api.global.enums.GrantType;
 import com.budget.api.budget_api.global.security.exception.JwtAuthenticationException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -56,13 +57,13 @@ public class JwtTokenProvider {
             .get("username", String.class);
     }
 
-    public String createJwt(String category,String account,String username) {
-        String jwtCompact = null;
+    public String createJwt(String category,String account,String username, GrantType grant) {
 
         if(category.equals("access")){
-            Jwts.builder()
+            return Jwts.builder()
                 .claim("category", category)
                 .claim("account", account)
+                .claim("grant",grant.toString())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(
                     System.currentTimeMillis() + accessExpiration))
@@ -70,7 +71,7 @@ public class JwtTokenProvider {
                 .compact();
 
         }else if(category.equals("refresh")){
-            Jwts.builder()
+            return Jwts.builder()
                 .claim("category", category)
                 .claim("account", account)
                 .claim("username", username)
@@ -81,6 +82,6 @@ public class JwtTokenProvider {
                 .compact();
 
         }
-        return jwtCompact;
+        return null;
     }
 }
