@@ -14,6 +14,7 @@ import jakarta.persistence.ManyToOne;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -27,8 +28,13 @@ public class Budget {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long budgetId;
     private Long budget;
+    @Column(name = "start_date")
     private LocalDate startDate;
+    @Column(name = "end_date")
     private LocalDate endDate;
+    @Column(name = "update_date")
+    @Default
+    private LocalDate updateDate = LocalDate.now();
 
     @ManyToOne(fetch = FetchType.LAZY,cascade=CascadeType.ALL)
     @JoinColumn(name="category_id", nullable = false)
