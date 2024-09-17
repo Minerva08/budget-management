@@ -17,6 +17,7 @@ public enum ErrorCode {
     DATE_VALIDATE_PARAM(BAD_REQUEST, "날짜 유효성 조건에 맞지 않습니다."),
     VALIDATE_PARAM(BAD_REQUEST, "유효성 조건에 맞지 않습니다."),
     REQUIRED_PARAM(INTERNAL_SERVER_ERROR, "Not Null"),
+    BUDGET_CATE_NOT_EXIST(BAD_REQUEST,"존재하지 않는 예산 카테고리입니다"),
 
     // 인증&인가
     AUTHENTICATION_FAILED(HttpStatus.UNAUTHORIZED, "사용자 인증에 실패했습니다."),

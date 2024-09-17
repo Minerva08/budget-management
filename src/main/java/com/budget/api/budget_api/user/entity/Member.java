@@ -25,14 +25,14 @@ import lombok.NoArgsConstructor;
 public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="id")
-    private Long id;
+    private Long memberId;
+    @Column(unique = true) // 고유 제약 조건 설정
     private String account;
     private String email;
     private String username;
     private String pw;
     private LocalDate birth;
-    @Column(name = "`grant`")
+    @Column(name = "grant")
     @Enumerated(EnumType.STRING)
     private GrantType grant;
     private LocalDateTime createDate;
