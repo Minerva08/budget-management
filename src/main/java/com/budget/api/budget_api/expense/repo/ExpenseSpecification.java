@@ -1,14 +1,13 @@
-package com.budget.api.budget_api.budget.repo;
+package com.budget.api.budget_api.expense.repo;
 
-import com.budget.api.budget_api.budget.entity.Budget;
-import jakarta.persistence.criteria.JoinType;
+import com.budget.api.budget_api.expense.entity.Expense;
 import jakarta.persistence.criteria.Predicate;
 import java.time.LocalDate;
 import org.springframework.data.jpa.domain.Specification;
 
-public class BudgetSpecification {
+public class ExpenseSpecification {
 
-    public static Specification<Budget> hasCondition(boolean join,Long memberId,String categoryCode,Long budgetMin, Long budgetMax, LocalDate startDate, LocalDate endDate) {
+    public static Specification<Expense> hasCondition(Long memberId,String categoryCode,Long budgetMin, Long budgetMax, LocalDate startDate, LocalDate endDate) {
         return (root, query, builder) -> {
             // 기본 조건을 conjunction으로 시작
             Predicate predicate = builder.conjunction();
@@ -34,18 +33,13 @@ public class BudgetSpecification {
 
             if(startDate!=null && endDate!=null){
                 predicate = builder.and(predicate,builder.greaterThanOrEqualTo(root.get("startDate"), startDate)); // 이상
-                predicate = builder.and(predicate,builder.lessThanOrEqualTo(root.get("endDate"), endDate)); // 이하
+                predicate = builder.and(predicate,builder.lessThanOrEqualTo(root.get("endDate"), startDate)); // 이하
             }
 
             if (memberId != null) {
                 predicate = builder.and(predicate, builder.equal(root.get("member").get("id"), memberId));
             }
 
-            if(join){
-                // Fetch join 추가
-                query.distinct(true); // 중복된 결과 방지
-                root.fetch("category", JoinType.LEFT);
-            }
             return predicate;
         };
     }

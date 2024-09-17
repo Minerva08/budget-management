@@ -99,7 +99,7 @@ public class BudgetServiceImpl implements BudgetService{
         Member member = userRepository.findByAccount(userAccount)
             .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        Specification<Budget> spec = BudgetSpecification.hasCondition(member.getMemberId(),category,budgetMin,budgetMax,startLocalDate,endLocalDate);
+        Specification<Budget> spec = BudgetSpecification.hasCondition(false,member.getMemberId(),category,budgetMin,budgetMax,startLocalDate,endLocalDate);
 
         List<Budget> budgetList = budgetRepository.findAll(spec);
 
