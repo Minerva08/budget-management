@@ -12,8 +12,8 @@ public class ExpenseDetailOneRes extends ExpenseDetail{
     private String account;
 
     public ExpenseDetailOneRes(Long expense, String memo, LocalDateTime createdTime,
-        String categoryCode, String categoryName, String account) {
-        super(expense, memo, createdTime);
+        String categoryCode, String categoryName, String account, Boolean isExcludingTotal) {
+        super(expense, memo, createdTime,isExcludingTotal);
         this.categoryCode = categoryCode;
         this.categoryName = categoryName;
         this.account = account;

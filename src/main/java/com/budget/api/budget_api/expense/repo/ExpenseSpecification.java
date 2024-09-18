@@ -34,18 +34,18 @@ public class ExpenseSpecification {
 
             // startDate 조건 추가
             if (search.getStartDate() != null) {
-                predicate = builder.and(predicate, builder.greaterThanOrEqualTo(root.get("createDate"), search.getStartDate()));
+                predicate = builder.and(predicate, builder.greaterThanOrEqualTo(root.get("creatDate"), search.getStartDate()));
             }
 
             // endDate 조건 추가
             if (search.getEndDate() != null) {
-                predicate = builder.and(predicate, builder.lessThanOrEqualTo(root.get("createDate"), search.getEndDate()));
+                predicate = builder.and(predicate, builder.lessThanOrEqualTo(root.get("creatDate"), search.getEndDate()));
             }
 
             // categoryId 조건 추가
             if (search.getCategoryId() != null) {
                 Join<Expense, Category> categoryJoin = root.join("category");
-                predicate = builder.and(predicate, builder.equal(categoryJoin.get("id"), search.getCategoryId()));
+                predicate = builder.and(predicate, builder.equal(categoryJoin.get("categoryId"), search.getCategoryId()));
             }
 
             return predicate;

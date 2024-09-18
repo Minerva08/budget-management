@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -208,6 +209,8 @@ public class ExpenseServiceImpl implements ExpenseService {
 
         Map<Long, List<Expense>> groupedByCategory = getGroupedByCategory(searchList);
 
+        AtomicReference<Long> totalExpenseExcludeExpense = new AtomicReference<>(0l);
+
         // Step 3: 그룹화된 데이터를 Stream으로 변환해 SumExpense 객체로 변환
         List<SumExpense> sumExpenses = groupedByCategory.entrySet().stream()
             .map(entry -> {
@@ -222,13 +225,20 @@ public class ExpenseServiceImpl implements ExpenseService {
                         .createdTime(expense.getCreatDate())
                         .expense(expense.getExpense())
                         .memo(expense.getMemo())
+                        .isExcludingTotal(expense.getExcludingTotal())
                         .build();
                 }).collect(Collectors.toList());
 
                 // 카테고리별 비용 합계 계산
                 long totalByCategory = expensesForCategory.stream()
+                    .filter(Expense::getExcludingTotal)
                     .mapToLong(Expense::getExpense)
                     .sum();
+
+                totalExpenseExcludeExpense.updateAndGet(v -> v + expensesForCategory.stream()
+                    .filter(expense -> !expense.getExcludingTotal())  // false인 항목 필터링
+                    .mapToLong(Expense::getExpense)  // 비용을 long으로 매핑
+                    .sum());
 
                 // SumExpense 객체 생성
                 SumExpense sumExpense = new SumExpense();
@@ -240,6 +250,7 @@ public class ExpenseServiceImpl implements ExpenseService {
                 return sumExpense;
             }).collect(Collectors.toList());
 
+
         // Step 4: ExpenseSearchRes에 sumExpenses를 설정하여 반환
         return ExpenseSearchRes
             .builder()
@@ -248,7 +259,7 @@ public class ExpenseServiceImpl implements ExpenseService {
             .startDate(startBySearch)
             .endDate(endBySearch)
             .sumExpense(sumExpenses)
-            .totalExpense(sumExpenses.stream().mapToLong(SumExpense::getTotalByCategory).sum())
+            .totalExpense(Long.parseLong(String.valueOf(totalExpenseExcludeExpense)))
             .build();
     }
 
@@ -261,6 +272,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     @Override
     public ExpenseDetailOneRes getExpenseDetail(Long expenseId, String userAccount) {
+
         ExpenseSearch search = ExpenseSearch.builder()
             .userAccount(userAccount)
             .expenseId(expenseId)
@@ -271,13 +283,14 @@ public class ExpenseServiceImpl implements ExpenseService {
 
         Expense expenseOne = expenseRepository.findAll(spec).stream().findFirst().get();
 
-        return (ExpenseDetailOneRes) ExpenseDetailOneRes.builder()
+        return ExpenseDetailOneRes.builder()
             .categoryCode(expenseOne.getCategory().getCategoryCode())
             .categoryName(expenseOne.getCategory().getCategoryName())
             .account(userAccount)
             .expense(expenseOne.getExpense())
             .createdTime(expenseOne.getCreatDate())
             .memo(expenseOne.getMemo())
+            .isExcludingTotal(expenseOne.getExcludingTotal())
             .build();
     }
 

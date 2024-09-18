@@ -15,5 +15,6 @@ public class ExpenseDetail{
     private Long expense;
     private String memo;
     private LocalDateTime createdTime;
+    private Boolean isExcludingTotal;
 
 }
