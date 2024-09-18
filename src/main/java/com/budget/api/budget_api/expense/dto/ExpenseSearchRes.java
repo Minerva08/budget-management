@@ -1,8 +1,6 @@
 package com.budget.api.budget_api.expense.dto;
 
-import jakarta.validation.Valid;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,17 +26,6 @@ public class ExpenseSearchRes {
         private String categoryName;
         private List<ExpenseDetail> expenseList;
         private long totalByCategory;
-
-    }
-
-    @Getter
-    @Setter
-    @Builder
-    @AllArgsConstructor
-    public static class ExpenseDetail{
-        private Long expense;
-        private String memo;
-        private LocalDateTime createdTime;
 
     }
 }

@@ -9,6 +9,7 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class ExpenseSearch {
+    private Long expenseId;
     private String userAccount;
     private Long costMin;
     private Long costMax;

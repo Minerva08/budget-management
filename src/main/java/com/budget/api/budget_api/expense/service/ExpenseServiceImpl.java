@@ -5,13 +5,14 @@ import com.budget.api.budget_api.budget.repo.BudgetRepository;
 import com.budget.api.budget_api.budget.repo.BudgetSpecification;
 import com.budget.api.budget_api.category.entity.Category;
 import com.budget.api.budget_api.category.repo.CategoryRepository;
+import com.budget.api.budget_api.expense.dto.ExpenseDetail;
+import com.budget.api.budget_api.expense.dto.ExpenseDetailOneRes;
 import com.budget.api.budget_api.expense.dto.ExpenseModReq;
 import com.budget.api.budget_api.expense.dto.ExpenseModReq.ExpenseMod;
 import com.budget.api.budget_api.expense.dto.ExpenseReq;
 import com.budget.api.budget_api.expense.dto.ExpenseRes;
 import com.budget.api.budget_api.expense.dto.ExpenseSearch;
 import com.budget.api.budget_api.expense.dto.ExpenseSearchRes;
-import com.budget.api.budget_api.expense.dto.ExpenseSearchRes.ExpenseDetail;
 import com.budget.api.budget_api.expense.dto.ExpenseSearchRes.SumExpense;
 import com.budget.api.budget_api.expense.entity.Expense;
 import com.budget.api.budget_api.expense.repo.ExpenseRepository;
@@ -21,7 +22,6 @@ import com.budget.api.budget_api.global.common.exception.CustomException;
 import com.budget.api.budget_api.user.entity.Member;
 import com.budget.api.budget_api.user.repo.UserRepository;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -84,7 +84,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
             Expense expense = Expense.builder()
                 .memo(e.getMemo())
-                .creatDate(e.getCreateDate())
+                .creatDate(e.getCreatedTime())
                 .expense(e.getExpense())
                 .member(member)
                 .budget(budgetMap.get(e.getCategoryCode()))
@@ -203,10 +203,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
         }
 
-        // Step 2: Expense를 categoryId (카테고리) 기준으로 그룹화
-        Map<Long, List<Expense>> groupedByCategory = searchList.stream()
-            .collect(Collectors.groupingBy(expense -> expense.getCategory().getCategoryId()));
-
+        Map<Long, List<Expense>> groupedByCategory = getGroupedByCategory(searchList);
 
         // Step 3: 그룹화된 데이터를 Stream으로 변환해 SumExpense 객체로 변환
         List<SumExpense> sumExpenses = groupedByCategory.entrySet().stream()
@@ -218,12 +215,11 @@ public class ExpenseServiceImpl implements ExpenseService {
                 String code = expensesForCategory.get(0).getCategory().getCategoryCode();
 
                 List<ExpenseDetail> expenseDetails = expensesForCategory.stream().map(expense -> {
-                    ExpenseDetail detail = ExpenseDetail.builder()
+                    return ExpenseDetail.builder()
                         .createdTime(expense.getCreatDate())
                         .expense(expense.getExpense())
                         .memo(expense.getMemo())
                         .build();
-                    return detail;
                 }).collect(Collectors.toList());
 
                 // 카테고리별 비용 합계 계산
@@ -253,6 +249,35 @@ public class ExpenseServiceImpl implements ExpenseService {
             .build();
     }
 
+    private Map<Long, List<Expense>> getGroupedByCategory(List<Expense> searchList) {
+        // Step 2: Expense를 categoryId (카테고리) 기준으로 그룹화
+        Map<Long, List<Expense>> groupedByCategory = searchList.stream()
+            .collect(Collectors.groupingBy(expense -> expense.getCategory().getCategoryId()));
+        return groupedByCategory;
+    }
+
+    @Override
+    public ExpenseDetailOneRes getExpenseDetail(Long expenseId, String userAccount) {
+        ExpenseSearch search = ExpenseSearch.builder()
+            .userAccount(userAccount)
+            .expenseId(expenseId)
+            .build();
+
+
+        Specification<Expense> spec = ExpenseSpecification.hasCondition(search);
+
+        Expense expenseOne = expenseRepository.findAll(spec).stream().findFirst().get();
+
+        return (ExpenseDetailOneRes) ExpenseDetailOneRes.builder()
+            .categoryCode(expenseOne.getCategory().getCategoryCode())
+            .categoryName(expenseOne.getCategory().getCategoryName())
+            .account(userAccount)
+            .expense(expenseOne.getExpense())
+            .createdTime(expenseOne.getCreatDate())
+            .memo(expenseOne.getMemo())
+            .build();
+    }
+
     public Optional<Budget> findMatchingBudget(List<Budget> budgetsByMember, ExpenseMod mod) {
         if (mod.getModeCategoryCode() != null) {
             return budgetsByMember.stream()
@@ -261,6 +286,6 @@ public class ExpenseServiceImpl implements ExpenseService {
                 .filter(budget -> budget.getEndDate().isAfter(LocalDate.now()))
                 .findFirst();
         }
-        return Optional.empty(); // `modeCategoryCode`가 null인 경우 빈 Optional 반환
+        return Optional.empty();
     }
 }

@@ -1,5 +1,6 @@
 package com.budget.api.budget_api.expense.service;
 
+import com.budget.api.budget_api.expense.dto.ExpenseDetailOneRes;
 import com.budget.api.budget_api.expense.dto.ExpenseModReq;
 import com.budget.api.budget_api.expense.dto.ExpenseReq;
 import com.budget.api.budget_api.expense.dto.ExpenseRes;
@@ -14,4 +15,6 @@ public interface ExpenseService {
     ExpenseRes updateExpense(@Valid ExpenseModReq expenseModReq, String userAccount);
 
     ExpenseSearchRes getExpenseList(Long costMin, Long costMax, LocalDate startDate, LocalDate endDate, String categoryCode, String userAccount);
+
+    ExpenseDetailOneRes getExpenseDetail(Long expenseId, String userAccount);
 }
