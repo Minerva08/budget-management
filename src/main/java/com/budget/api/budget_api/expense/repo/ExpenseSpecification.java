@@ -1,43 +1,51 @@
 package com.budget.api.budget_api.expense.repo;
 
+import com.budget.api.budget_api.category.entity.Category;
+import com.budget.api.budget_api.expense.dto.ExpenseSearch;
 import com.budget.api.budget_api.expense.entity.Expense;
+import com.budget.api.budget_api.user.entity.Member;
+import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import java.time.LocalDate;
 import org.springframework.data.jpa.domain.Specification;
 
 public class ExpenseSpecification {
 
-    public static Specification<Expense> hasCondition(Long memberId,String categoryCode,Long budgetMin, Long budgetMax, LocalDate startDate, LocalDate endDate) {
+    public static Specification<Expense> hasCondition(ExpenseSearch search) {
         return (root, query, builder) -> {
             // 기본 조건을 conjunction으로 시작
             Predicate predicate = builder.conjunction();
 
-            // categoryCode 조건 추가
-            if (categoryCode != null && !categoryCode.isEmpty()) {
-                String searchPattern = "%" + categoryCode + "%";
-                predicate = builder.and(predicate, builder.like(root.get("categoryCode"), searchPattern));
+            // userAccount 필드 조건 추가
+            if (search.getUserAccount() != null && !search.getUserAccount().isEmpty()) {
+                Join<Expense, Member> memberJoin = root.join("member");
+                predicate = builder.and(predicate, builder.equal(memberJoin.get("account"), search.getUserAccount()));
             }
 
-            // budget 범위 조건 추가
-            if (budgetMin != null && budgetMax != null) {
-                predicate = builder.and(predicate, builder.between(root.get("budget"), budgetMin, budgetMax));
+            // costMin 조건 추가
+            if (search.getCostMin()!=null && search.getCostMin() > 0) {
+                predicate = builder.and(predicate, builder.greaterThanOrEqualTo(root.get("expense"), search.getCostMin()));
             }
 
-            if(startDate==null && endDate !=null){
-                predicate = builder.and(predicate,builder.lessThanOrEqualTo(root.get("endDate"),endDate));
+            // costMax 조건 추가
+            if (search.getCostMax()!=null && search.getCostMax() > 0) {
+                predicate = builder.and(predicate, builder.lessThanOrEqualTo(root.get("expense"), search.getCostMax()));
             }
 
-            if(startDate!=null&& endDate==null){
-                predicate = builder.and(predicate,builder.greaterThanOrEqualTo(root.get("startDate"),startDate));
+            // startDate 조건 추가
+            if (search.getStartDate() != null) {
+                predicate = builder.and(predicate, builder.greaterThanOrEqualTo(root.get("createDate"), search.getStartDate()));
             }
 
-            if(startDate!=null && endDate!=null){
-                predicate = builder.and(predicate,builder.greaterThanOrEqualTo(root.get("startDate"), startDate)); // 이상
-                predicate = builder.and(predicate,builder.lessThanOrEqualTo(root.get("endDate"), startDate)); // 이하
+            // endDate 조건 추가
+            if (search.getEndDate() != null) {
+                predicate = builder.and(predicate, builder.lessThanOrEqualTo(root.get("createDate"), search.getEndDate()));
             }
 
-            if (memberId != null) {
-                predicate = builder.and(predicate, builder.equal(root.get("member").get("id"), memberId));
+            // categoryId 조건 추가
+            if (search.getCategoryId() != null) {
+                Join<Expense, Category> categoryJoin = root.join("category");
+                predicate = builder.and(predicate, builder.equal(categoryJoin.get("id"), search.getCategoryId()));
             }
 
             return predicate;

@@ -3,19 +3,29 @@ package com.budget.api.budget_api.expense.service;
 import com.budget.api.budget_api.budget.entity.Budget;
 import com.budget.api.budget_api.budget.repo.BudgetRepository;
 import com.budget.api.budget_api.budget.repo.BudgetSpecification;
+import com.budget.api.budget_api.category.entity.Category;
+import com.budget.api.budget_api.category.repo.CategoryRepository;
 import com.budget.api.budget_api.expense.dto.ExpenseModReq;
 import com.budget.api.budget_api.expense.dto.ExpenseModReq.ExpenseMod;
 import com.budget.api.budget_api.expense.dto.ExpenseReq;
 import com.budget.api.budget_api.expense.dto.ExpenseRes;
+import com.budget.api.budget_api.expense.dto.ExpenseSearch;
+import com.budget.api.budget_api.expense.dto.ExpenseSearchRes;
+import com.budget.api.budget_api.expense.dto.ExpenseSearchRes.ExpenseDetail;
+import com.budget.api.budget_api.expense.dto.ExpenseSearchRes.SumExpense;
 import com.budget.api.budget_api.expense.entity.Expense;
 import com.budget.api.budget_api.expense.repo.ExpenseRepository;
+import com.budget.api.budget_api.expense.repo.ExpenseSpecification;
 import com.budget.api.budget_api.global.common.error.ErrorCode;
 import com.budget.api.budget_api.global.common.exception.CustomException;
 import com.budget.api.budget_api.user.entity.Member;
 import com.budget.api.budget_api.user.repo.UserRepository;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -36,6 +46,7 @@ public class ExpenseServiceImpl implements ExpenseService {
     private final UserRepository userRepository;
     private final ExpenseRepository expenseRepository;
     private final BudgetRepository budgetRepository;
+    private final CategoryRepository categoryRepository;
 
 
     @Override
@@ -144,6 +155,101 @@ public class ExpenseServiceImpl implements ExpenseService {
         return ExpenseRes.builder()
             .account(userAccount)
             .updateCnt(Integer.parseInt(String.valueOf(updateCnt)))
+            .build();
+    }
+
+    @Override
+    public ExpenseSearchRes getExpenseList(Long costMin, Long costMax, LocalDate startDate,
+        LocalDate endDate, String categoryCode, String userAccount) {
+
+        Category categoryInfo = new Category();
+
+        if(categoryCode!=null){
+            categoryInfo = categoryRepository.findByCategoryCode(categoryCode)
+                .orElseThrow(() -> new CustomException(ErrorCode.BUDGET_CATE_NOT_EXIST));
+
+        }
+
+        ExpenseSearch search = ExpenseSearch.builder()
+            .costMin(costMin)
+            .costMax(costMax)
+            .categoryId(categoryInfo.getCategoryId())
+            .startDate(startDate)
+            .endDate(endDate)
+            .userAccount(userAccount)
+            .build();
+
+        Specification<Expense> spec = ExpenseSpecification.hasCondition(search);
+
+        List<Expense> searchList= expenseRepository.findAll(spec);
+
+        LocalDate startBySearch = startDate;
+        LocalDate endBySearch = endDate;
+
+        if(startDate==null){
+            Optional<Expense> firstExpense = searchList.stream()
+                .sorted(Comparator.comparing(Expense::getCreatDate)) // createDate 오름차순 정렬
+                .findFirst();
+
+            startBySearch = LocalDate.from(firstExpense.get().getCreatDate());
+        }
+
+        if(endDate==null){
+            Optional<Expense> firstExpense = searchList.stream()
+                .sorted(Comparator.comparing(Expense::getCreatDate).reversed()) // createDate 내림차순 정렬
+                .findFirst();
+
+            endBySearch = LocalDate.from(firstExpense.get().getCreatDate());
+
+        }
+
+        // Step 2: Expense를 categoryId (카테고리) 기준으로 그룹화
+        Map<Long, List<Expense>> groupedByCategory = searchList.stream()
+            .collect(Collectors.groupingBy(expense -> expense.getCategory().getCategoryId()));
+
+
+        // Step 3: 그룹화된 데이터를 Stream으로 변환해 SumExpense 객체로 변환
+        List<SumExpense> sumExpenses = groupedByCategory.entrySet().stream()
+            .map(entry -> {
+                List<Expense> expensesForCategory = entry.getValue();
+
+                // categoryName은 첫 번째 항목의 카테고리 이름을 사용
+                String name = expensesForCategory.get(0).getCategory().getCategoryName();
+                String code = expensesForCategory.get(0).getCategory().getCategoryCode();
+
+                List<ExpenseDetail> expenseDetails = expensesForCategory.stream().map(expense -> {
+                    ExpenseDetail detail = ExpenseDetail.builder()
+                        .createdTime(expense.getCreatDate())
+                        .expense(expense.getExpense())
+                        .memo(expense.getMemo())
+                        .build();
+                    return detail;
+                }).collect(Collectors.toList());
+
+                // 카테고리별 비용 합계 계산
+                long totalByCategory = expensesForCategory.stream()
+                    .mapToLong(Expense::getExpense)
+                    .sum();
+
+                // SumExpense 객체 생성
+                SumExpense sumExpense = new SumExpense();
+                sumExpense.setCategoryCode(code);
+                sumExpense.setCategoryName(name);
+                sumExpense.setExpenseList(expenseDetails);
+                sumExpense.setTotalByCategory(totalByCategory);
+
+                return sumExpense;
+            }).collect(Collectors.toList());
+
+        // Step 4: ExpenseSearchRes에 sumExpenses를 설정하여 반환
+        return ExpenseSearchRes
+            .builder()
+            .expenseCnt(sumExpenses.size())
+            .account(userAccount)
+            .startDate(startBySearch)
+            .endDate(endBySearch)
+            .sumExpense(sumExpenses)
+            .totalExpense(sumExpenses.stream().mapToLong(SumExpense::getTotalByCategory).sum())
             .build();
     }
 

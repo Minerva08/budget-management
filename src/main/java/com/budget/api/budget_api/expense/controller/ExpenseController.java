@@ -3,19 +3,23 @@ package com.budget.api.budget_api.expense.controller;
 import com.budget.api.budget_api.expense.dto.ExpenseModReq;
 import com.budget.api.budget_api.expense.dto.ExpenseReq;
 import com.budget.api.budget_api.expense.dto.ExpenseRes;
+import com.budget.api.budget_api.expense.dto.ExpenseSearchRes;
 import com.budget.api.budget_api.expense.service.ExpenseService;
 import com.budget.api.budget_api.global.common.CommonResponse;
 import com.budget.api.budget_api.global.security.custom.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -59,6 +63,34 @@ public class ExpenseController {
         @AuthenticationPrincipal CustomUserDetails userDetails) {
         CommonResponse<ExpenseRes> response = CommonResponse.ok("지출 정보 변경에 성공 하였습니다",
             expenseService.updateExpense(expenseModReq,userDetails.getUserAccount()));
+
+        return new ResponseEntity<>(response, response.getHttpStatus());
+    }
+
+
+    /**
+     * 사용자 지출 조회
+     *
+     * @param
+     * @return 사용자 account, 변경된 지출 개수
+     * @throws com.budget.api.budget_api.global.common.exception.CustomException, CustomException
+     */
+    @Operation(summary = "사용자 지출 조회(목록)", description = "사용자의 지출을 조회(목록) 한다.")
+    @GetMapping
+    public ResponseEntity<CommonResponse<ExpenseSearchRes>> modExpense(
+        @RequestParam(required = false)
+         Long costMin,
+        @RequestParam(required = false)
+         Long costMax,
+        @RequestParam(required = false)
+         LocalDate startDate,
+        @RequestParam(required = false)
+         LocalDate endDate,
+        @RequestParam(required = false)
+         String categoryCode,
+    @AuthenticationPrincipal CustomUserDetails userDetails) {
+        CommonResponse<ExpenseSearchRes> response = CommonResponse.ok("지출 정보 조회에 성공 하였습니다",
+            expenseService.getExpenseList(costMin,costMax,startDate,endDate,categoryCode,userDetails.getUserAccount()));
 
         return new ResponseEntity<>(response, response.getHttpStatus());
     }
