@@ -52,7 +52,7 @@ public class ExpenseController {
 
 
     /**
-     * 사용자 지출 등록
+     * 사용자 지출 수정
      *
      * @param expenseModReq 지출 등록 요청 DTO
      * @return 사용자 account, 등록된 지출 개수

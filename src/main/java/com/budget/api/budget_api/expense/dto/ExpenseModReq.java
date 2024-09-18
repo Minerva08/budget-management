@@ -4,15 +4,14 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Valid
 public class ExpenseModReq {
+    @NotNull(message = "Mod ExpenseList is not Null.")
     private List<ExpenseMod> modList;
 
     @Getter
@@ -27,6 +26,8 @@ public class ExpenseModReq {
         private Long modExpense;
         @Nullable
         private String memo;
+        @Nullable
+        private Boolean excludingTotal;
     }
 
 }

@@ -32,6 +32,10 @@ public class Expense {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long expenseId;
     private Long expense;
+
+    @Builder.Default
+    private Boolean excludingTotal = false;
+
     @Column(name = "create_date")
     private LocalDateTime creatDate;
     private String memo;

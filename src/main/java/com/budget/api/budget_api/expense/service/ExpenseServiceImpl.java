@@ -22,6 +22,7 @@ import com.budget.api.budget_api.global.common.exception.CustomException;
 import com.budget.api.budget_api.user.entity.Member;
 import com.budget.api.budget_api.user.repo.UserRepository;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -146,6 +147,8 @@ public class ExpenseServiceImpl implements ExpenseService {
                 .memo(ex.getMemo()==null?orgExpenseInfo.getMemo():ex.getMemo())
                 .budget(budgetInfo)
                 .category(budgetInfo.getCategory())
+                .excludingTotal(ex.getExcludingTotal()==null ? orgExpenseInfo.getExcludingTotal() : ex.getExcludingTotal() )
+                .creatDate(LocalDateTime.now())
                 .build();
 
             expenseRepository.save(modExpenseInfo);
