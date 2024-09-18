@@ -17,6 +17,9 @@ public enum ErrorCode {
     BUDGET_DO_NOT_MOD(BAD_REQUEST,"해당 월의 예산이 아니므로 수정할 수 없습니다"),
     BUDGET_DO_NOT_FOUND(BAD_REQUEST,"사용자의 예산이 설정 되어 있지 않습니다"),
 
+    //Expense
+    EXPENSE_NOT_EXIST(BAD_REQUEST,"해당 사용자의 존재하지 않는 소비 입니다"),
+
     //Valid
     DATE_VALIDATE_PARAM(BAD_REQUEST, "날짜 유효성 조건에 맞지 않습니다."),
     VALIDATE_PARAM(BAD_REQUEST, "유효성 조건에 맞지 않습니다."),
